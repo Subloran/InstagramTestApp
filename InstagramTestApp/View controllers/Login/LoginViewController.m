@@ -42,6 +42,9 @@ static NSString* redirectHost = @"ya.ru";
 
 - (void)loadLoginRequest
 {
+    UIView* reloadButton = [self.view viewWithTag:100];
+    if (reloadButton)
+        [reloadButton removeFromSuperview];
     NSString* loginURL = [NSString stringWithFormat:@"https://instagram.com/oauth/authorize/?client_id=%@&redirect_uri=%@&response_type=token", @"550b69bccdcf453bafdf7335cebcc95f", redirectURL];
     NSURLRequest* request = [NSURLRequest requestWithURL:[NSURL URLWithString:loginURL]];
     [webView loadRequest:request];
@@ -52,6 +55,7 @@ static NSString* redirectHost = @"ya.ru";
 - (BOOL)webView:(UIWebView *)webView shouldStartLoadWithRequest:(NSURLRequest *)request navigationType:(UIWebViewNavigationType)navigationType
 {
     static BOOL animation = YES;
+        
     if ([request.URL.host isEqualToString:redirectHost])
     {
         NSString* token = [self queryStringParametersFromString:request.URL.fragment][@"access_token"];
@@ -77,6 +81,19 @@ static NSString* redirectHost = @"ya.ru";
         [dict setObject:value forKey:key];
     }];
     return dict;
+}
+
+- (void)webView:(UIWebView *)webView didFailLoadWithError:(nullable NSError *)error
+{
+    UIButton* reloadButton = [UIButton buttonWithType:UIButtonTypeSystem];
+    [reloadButton setTitleColor:[UIColor lightGrayColor] forState:UIControlStateNormal];
+    [reloadButton setTitle:@"Перезагрузить" forState:UIControlStateNormal];
+    [reloadButton addTarget:self action:@selector(loadLoginRequest) forControlEvents:UIControlEventTouchUpInside];
+    [reloadButton sizeToFit];
+    reloadButton.autoresizingMask = UIViewAutoresizingFlexibleBottomMargin | UIViewAutoresizingFlexibleTopMargin | UIViewAutoresizingFlexibleRightMargin | UIViewAutoresizingFlexibleLeftMargin;
+    [self.view addSubview:reloadButton];
+    reloadButton.center = CGPointMake(self.view.bounds.size.width / 2, self.view.bounds.size.height / 2);
+    reloadButton.tag = 100;
 }
 
 @end
